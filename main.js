@@ -1,4 +1,5 @@
 // Remove duplicates
+/// FIND WAY TO DO THIS AUTOMATICALLY WHEN BUILDING TREE ///
 const removeDuplicates = (array) => {
   return array.filter((item, index) => array.indexOf(item) === index);
 };
@@ -30,7 +31,7 @@ const mergeSort = (array) => {
 };
 
 // Function to build tree
-// Returns middle of array (root)
+// Returns middle of tree (root)
 const buildTree = (array, start, end) => {
   if (start > end) {
     return null;
@@ -66,50 +67,45 @@ class Tree {
     }
     let curr = this.root;
     while (curr) {
-      if (value === curr.data) {
-        console.log("No Duplicate Values");
-        return;
-      }
       if (value < curr.data) {
         if (curr.left === null) {
           curr.left = newNode;
           return;
         }
         curr = curr.left;
-      } else {
+      } else if (value > curr.data) {
         if (curr.right === null) {
           curr.right = newNode;
           return;
         }
         curr = curr.right;
+      } else {
+        console.log("No Duplicate Values");
+        return;
       }
     }
   }
 
   // Insert w/ recursion
-  insertRecursion(value) {
+  insertRecursion(value, root = this.root) {
     const newNode = new Node(value);
     if (this.root === null) {
       this.root = newNode;
     } else {
-      this.insertNodeRecursion(this.root, newNode);
-    }
-  }
-
-  insertNodeRecursion(root, newNode) {
-    if (newNode.data === root.data) {
-      console.log("No Duplicate Values");
-    } else if (newNode.data < root.data) {
-      if (root.left === null) {
-        root.left = newNode;
+      if (newNode.data < root.data) {
+        if (root.left === null) {
+          root.left = newNode;
+        } else {
+          this.insertRecursion(value, root.left);
+        }
+      } else if (newNode.data > root.data) {
+        if (root.right === null) {
+          root.right = newNode;
+        } else {
+          this.insertRecursion(value, root.right);
+        }
       } else {
-        this.insertNodeRecursion(root.left, newNode);
-      }
-    } else {
-      if (root.right === null) {
-        root.right = newNode;
-      } else {
-        this.insertNodeRecursion(root.right, newNode);
+        console.log("No Duplicate Values");
       }
     }
   }
@@ -165,8 +161,12 @@ class Tree {
 
   // Find w/ loop
   find(value) {
+    if (value === undefined) {
+      console.log("No Value Entered");
+      return;
+    }
     if (this.root === null) {
-      console.log("Empty Tree");
+      console.log(`Empty Tree`);
     } else {
       let curr = this.root;
       while (curr) {
@@ -185,16 +185,20 @@ class Tree {
 
   // Find w/ recursion
   findRecursion(value, root = this.root) {
-    if (root === null) {
-      console.log("Node Not Found");
+    if (value === undefined) {
+      console.log("No Value Entered");
       return;
     }
-    if (value === root.data) {
-      console.log(root);
-    } else if (value < root.data) {
+    if (root === null) {
+      console.log(`Node Not Found`);
+      return;
+    }
+    if (value < root.data) {
       this.findRecursion(value, root.left);
-    } else {
+    } else if (value > root.data) {
       this.findRecursion(value, root.right);
+    } else {
+      console.log(root);
     }
   }
 
@@ -244,6 +248,92 @@ class Tree {
       }
     }
   }
+
+  // height() returned blank in browser
+  // maxHeight() assigns height's return to a variable and logs it
+  // Max height of tree === max depth of tree
+  maxHeight() {
+    const height = this.height(this.root);
+    console.log(height);
+  }
+
+  height(root) {
+    if (root === null) {
+      return -1;
+    }
+    return Math.max(this.height(root.left), this.height(root.right)) + 1;
+  }
+
+  getDepthOf(value) {
+    let depth = 0;
+    let curr = this.root;
+    if (value === undefined) {
+      console.log("No Value Entered");
+      return;
+    }
+    if (curr === null) {
+      return "Empty Tree";
+    }
+    while (curr) {
+      if (value === curr.data) {
+        console.log(depth);
+        return;
+      }
+      if (value < curr.data) {
+        depth++;
+        curr = curr.left;
+      } else if (value > curr.data) {
+        depth++;
+        curr = curr.right;
+      }
+    }
+    console.log("Node Not Found");
+  }
+
+  // Uses modified maxHeight() & getDepthOf()
+  getHeightOf(value) {
+    const treeHeight = this.heightOfHelper1();
+    const depthOfValue = this.heightOfHelper2(value);
+    if (treeHeight - depthOfValue === -1) {
+      console.log("Node Not Found");
+      return;
+    }
+    if (depthOfValue >= 0) {
+      console.log(treeHeight - depthOfValue);
+    }
+  }
+
+  // maxHeight() but returns height not console.log
+  heightOfHelper1() {
+    const height = this.height(this.root);
+    return height;
+  }
+
+  // getDepthOf() but returns depth not console.log
+  heightOfHelper2(value) {
+    let depth = 0;
+    let curr = this.root;
+    if (value === undefined) {
+      console.log("No Value Entered");
+      return;
+    }
+    if (curr === null) {
+      return "Empty Tree";
+    }
+    while (curr) {
+      if (value === curr.data) {
+        return depth;
+      }
+      if (value < curr.data) {
+        depth++;
+        curr = curr.left;
+      } else if (value > curr.data) {
+        depth++;
+        curr = curr.right;
+      }
+    }
+    return depth;
+  }
 }
 
 // From TOP to help visualize tree
@@ -260,8 +350,8 @@ const prettyPrint = (node, prefix = "", isLeft = true) => {
   }
 };
 
-const numbers = removeDuplicates([1, 1, 4, 2, 7, 6, 3, 5]);
+const numbers = removeDuplicates([1, 1, 2, 3, 4, 5, 6, 7]);
 const bst = new Tree(numbers);
-prettyPrint(bst.root);
-bst.delete(4);
+bst.insertRecursion(8);
+bst.insert(9);
 prettyPrint(bst.root);
