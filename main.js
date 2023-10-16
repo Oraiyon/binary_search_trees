@@ -249,9 +249,22 @@ class Tree {
     }
   }
 
+  printOrders() {
+    console.log("Level Order");
+    this.levelOrder();
+    console.log("Pre Order");
+    this.preOrder();
+    console.log("In Order");
+    this.inOrder();
+    console.log("Post Order");
+    this.postOrder();
+  }
+
   // height() returned blank in browser
   // maxHeight() assigns height's return to a variable and logs it
   // Max height of tree === max depth of tree
+  // Height = lowest node to root
+  // Depth = root to lowest node
   maxHeight() {
     const height = this.height(this.root);
     console.log(height);
@@ -294,12 +307,10 @@ class Tree {
   getHeightOf(value) {
     const treeHeight = this.heightOfHelper1();
     const depthOfValue = this.heightOfHelper2(value);
-    if (treeHeight - depthOfValue === -1) {
-      console.log("Node Not Found");
-      return;
-    }
-    if (depthOfValue >= 0) {
+    if (treeHeight - depthOfValue >= 0) {
       console.log(treeHeight - depthOfValue);
+    } else {
+      console.log("Node Not Found");
     }
   }
 
@@ -318,11 +329,12 @@ class Tree {
       return;
     }
     if (curr === null) {
-      return "Empty Tree";
+      console.log("Empty Tree");
+      return;
     }
     while (curr) {
       if (value === curr.data) {
-        return depth;
+        break;
       }
       if (value < curr.data) {
         depth++;
@@ -334,24 +346,86 @@ class Tree {
     }
     return depth;
   }
+
+  // Balanced if left height - right height is <= 1
+  isBalancedTree(root = this.root) {
+    if (root === null) {
+      return true;
+    }
+    const lh = this.height(root.left);
+    const rh = this.height(root.right);
+    if (
+      Math.abs(lh - rh) <= 1 &&
+      this.isBalancedTree(root.left) === true &&
+      this.isBalancedTree(root.right) === true
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  isBalanced() {
+    this.isBalancedTree() === true
+      ? console.log("Balanced")
+      : console.log("Not Balanced");
+  }
+
+  // This method can be used for other DFS methods if you want an array of values
+  // This uses inOrder DFS method
+  rebalanceTree(root = this.root) {
+    const nodes = [];
+    if (root !== null) {
+      nodes.push(
+        ...this.rebalanceTree(root.left),
+        root.data,
+        ...this.rebalanceTree(root.right),
+      );
+    }
+    return nodes;
+  }
+
+  rebalance() {
+    if (this.isBalancedTree() === false) {
+      const rebalancedTree = this.rebalanceTree();
+      this.root = buildTree(rebalancedTree, 0, rebalancedTree.length - 1);
+    } else {
+      console.log("Already Balanced");
+    }
+  }
+
+  // From TOP to help visualize tree
+  prettyPrint(node = this.root, prefix = "", isLeft = true) {
+    if (node === null) {
+      return;
+    }
+    if (node.right !== null) {
+      this.prettyPrint(
+        node.right,
+        `${prefix}${isLeft ? "│   " : "    "}`,
+        false,
+      );
+    }
+    console.log(`${prefix}${isLeft ? "└── " : "┌── "}${node.data}`);
+    if (node.left !== null) {
+      this.prettyPrint(node.left, `${prefix}${isLeft ? "    " : "│   "}`, true);
+    }
+  }
+
+  allTogether() {
+    this.prettyPrint();
+    this.isBalanced();
+    this.printOrders();
+    this.insert(70);
+    this.insertRecursion(60);
+    this.prettyPrint();
+    this.isBalanced();
+    this.rebalance();
+    this.prettyPrint();
+    this.isBalanced();
+    this.printOrders();
+  }
 }
 
-// From TOP to help visualize tree
-const prettyPrint = (node, prefix = "", isLeft = true) => {
-  if (node === null) {
-    return;
-  }
-  if (node.right !== null) {
-    prettyPrint(node.right, `${prefix}${isLeft ? "│   " : "    "}`, false);
-  }
-  console.log(`${prefix}${isLeft ? "└── " : "┌── "}${node.data}`);
-  if (node.left !== null) {
-    prettyPrint(node.left, `${prefix}${isLeft ? "    " : "│   "}`, true);
-  }
-};
-
-const numbers = removeDuplicates([1, 1, 2, 3, 4, 5, 6, 7]);
+const numbers = removeDuplicates([1, 1, 10, 20, 40, 30, 50]);
 const bst = new Tree(numbers);
-bst.insertRecursion(8);
-bst.insert(9);
-prettyPrint(bst.root);
+bst.allTogether();
